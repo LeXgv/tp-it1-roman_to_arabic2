@@ -1,0 +1,23 @@
+language: c
+sudo: false
+os: linux
+compiler: gcc
+addons:
+  apt:
+    packages:
+      - cmake-data
+      - cmake
+      - valgrind
+      - python3
+script:
+  - pip install --user cpplint
+  - cpplint main.c
+  - mkdir cmake
+  - cd cmake
+  - cmake ../
+  - cmake --build .
+  - cmake -DBUILD_TYPE=Debug -P cmake_install.cmake
+  - cd ../bin
+  - ls
+  - ./roman
+  - valgrind --leak-check=yes ./roman
