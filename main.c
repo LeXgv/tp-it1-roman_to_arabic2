@@ -31,26 +31,60 @@ CM = 900
 
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
+#include <string.h>
+
+
+struct roman_arabic;
+int get_arabic(char roman_symbol);
+
+enum status;
+enum status conver_roman_to_arabic(const char roman_str[], int *result);
+
+int test_conver_roman_to_decimal();
+
+int read_buffer();
+
+
+int main() {
+    //return test_convert_roman_to_decimal();
+    read_buffer();
+    return 0;
+}
+
 
 struct roman_arabic{
     char roman;
     int arabic;
 };
 
+enum status {
+	ok,
+	symbol_error,
+	format_error,
+	subtraction_rule_error,
+	result_pointer_null
+};
 
 //функция преобразующая римскую цифру в арабскую
-int getArabic(struct roman_arabic *arr, const  char *roman) {
-    for (int i = 0; i < 7; i++) {
-        if (arr[i].roman == *roman)
-            return arr[i].arabic;
+int get_arabic(const char roman_symbol) {
+	const int num_roman_symbols = 7;
+	struct roman_arabic value[7] = {{'I', 1}, {'V', 5}, {'X', 10},
+							 				{'L', 50}, {'C', 100}, {'D', 500},
+                             				{'M', 1000}};
+    int index_arabic_value = 0;
+    for (int i = 0; i < num_roman_symbols; i++) {
+    	if(value[index_arabic_value].roman == roman_symbol) {
+    		break;
+    	}
     }
-    return 0;
+    return index_arabic_value;
 }
 
-int convert_roman_to_decimal(const char roman_str[], int *result) {
-    struct roman_arabic value[7] = { {'I', 1}, {'V', 5}, {'X', 10},
-                                  {'L', 50}, {'C', 100}, {'D', 500},
-                                                        {'M', 1000}};
+enum status convert_roman_to_decimal(const char roman_str[], int *result) {
+    if (result == NULL) {
+    	return result_pointer_null;
+    }
     int size = strlen(roman_str);
     // переменная с помощью которой определяет, складывать или вычитать
     int modifier = 1;
@@ -60,12 +94,15 @@ int convert_roman_to_decimal(const char roman_str[], int *result) {
     // то меняем модификатор на +1
     // счетчик, цифры не должны повторятья друг за другом более 3 раз
     int counter = 0;
+    enum status status_run = ok;
     for (int i = size-1; i >= 0; --i) {
-        int arabic_value = getArabic(value, &roman_str[i]);
-        if (arabic_value == 0) return -2;  // строка содержит неверный символ
+        int arabic_value = get_arabic(roman_str[i]);
+        if (arabic_value == 0) return symbol_error;  // строка содержит неверный символ
         //нет 3 так как первая встреча в строке не засчитывается
         if ((counter == 2) && (before_digit == arabic_value)) {
-            return -1;  //ОШИБКА: Строка содержит неверный формат
+        	//ОШИБКА: Строка содержит неверный формат
+            status_run = format_error;
+            break; 
         }
             if (before_digit > arabic_value) {
                 //проверка правила вычитания
@@ -78,18 +115,24 @@ int convert_roman_to_decimal(const char roman_str[], int *result) {
                     modifier = -1;
                     counter = 0;
                 } else {
-                    return -3;  //нарушено правило вычитания
+                	//нарушено правило вычитания
+                    status_run = subtraction_rule_error;
+                    break;
                 }
             } else if (before_digit < arabic_value) {
                 modifier = 1;
                 counter = 0;
+            } else {  
+            	++counter;
             }
-            else  ++counter;  // before_digit == roman_value[*itr]
             *result = *result + modifier * arabic_value;
             before_digit = arabic_value;
         }
-    return 0;  //успешное выполнение
+    return status_run;  //успешное выполнение
 }
+
+
+
 
 int test_convert_roman_to_decimal() {
     //чтение csv файла с правильныеми значениями
@@ -154,6 +197,17 @@ int test_convert_roman_to_decimal() {
 
     return test_done;
 }
-int main() {
-    return test_convert_roman_to_decimal();
+
+
+
+int read_buffer() {
+	//необходим реалок буффера
+	char *buffer = malloc(5);
+	if (fgets(buffer, sizeof(buffer), stdin)) {
+		fgets(buffer, sizeof(buffer), stdin);
+		size_t len = strlen(buffer);
+		puts(buffer);
+	}
+	free(buffer);
+	return 0;
 }
