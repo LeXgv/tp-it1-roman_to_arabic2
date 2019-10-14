@@ -5,19 +5,30 @@ compiler: gcc
 addons:
   apt:
     packages:
-      - cmake-data
-      - cmake
-      - valgrind
-      - python3
-script:
-  - pip install --user cpplint
-  - cpplint main.c
-  - mkdir cmake
-  - cd cmake
-  - cmake ../
-  - cmake --build .
-  - cmake -DBUILD_TYPE=Debug -P cmake_install.cmake
-  - cd ../bin
-  - ls
-  - ./roman
-  - valgrind --leak-check=yes ./roman
+    - cmake-data
+    - cmake
+    - valgrind
+    - python3
+jobs:
+  include:
+    stage: CompileAndTests
+    script:
+    - pip install --user cpplint
+    - cpplint main.c
+    - mkdir cmake
+    - cd cmake
+    - cmake ../
+    - cmake --build .
+    - cmake -DBUILD_TYPE=Debug -P cmake_install.cmake
+    - cd ../bin
+    - ls
+    - "./roman"
+    - valgrind --leak-check=yes ./roman
+deploy:
+  provider: releases
+  api_key:
+    secure: 1rxduoNPRMfrmVTp2nzKFsDCVzw46r2KPGAclvPx6LdLzXW3lE1D+4wFf0i3lbAL5+W37tQjNIb95v7mfg/fadX2W6z7JQwwwjoc+/Cv+G2w3ax6atT0pLUF9YlZBbt6Z4xmtHx5TDp/8xXx0SjfCDH26zSwDA2iKVyirTNGAQmOA1zm9LUGt0c7LhnRim2dLuAMjp+MDvq2n6eymUQ7hdlO4ot+OzTOskhtIQMyTP7RPy3c9DnohOLGb00IFDJROf5EmgcL9M26elZ4e4pA7YfkaZa9+poGs5w2mMU+yHvt9m2jHL66P8xRnh8REkvqixSSJpJaxqIc0dMjzFzeE965Pw+jGHTHfyDF81N31RCFLT2H+9L0bjaUZKulsw14u4tslcQ6oEeDIYB6jH7wob49cOb4rJ6arObPXSdA3O4eizGMBOXs5F2tirno7B4WfdV1HLpElNeNlVWodkvaps6oXkU8BoMKseo9cpCtEnRSDNOnH2F1EDJZDqYMdhCnjlaJUpa3JKJJ3JJe/5jMSdydXaVDniiof1MPaw7ynrbJpFQmgtVKfQO99xfs7+W0L7lzI26Ffx0ru+KpwW5VL3JNvP+gNIDckiSEHqz5cTgLsDQhzX+orwZ80ZdbSTiY2IX/Jf1SzZHQL8nSIJuNGiWYqQAPAFiMSqpkX3rbcnY=
+  file: bin/roman
+  on:
+    repo: LeXgv/tp-it1-roman_to_arabic2
+    branch: work
